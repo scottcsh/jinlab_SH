@@ -1,0 +1,40 @@
+#!/bin/sh
+
+echo;
+echo "-----------------------------------------------------"
+echo "|                     Copy mrcs                     |"
+echo "-----------------------------------------------------"
+echo "Last updated: 2020/04/07"
+echo "Oringin directory input samples : (dir1/dir2/)"
+echo "Destination directory input samples : (dest/)"
+echo "Filetype input samples : (mrc, mrcs, tiff, etc)"
+echo;
+
+printf "Copy files from : "
+read origin_path
+
+printf "Paste files to : "
+read dest_path
+
+printf "Filetype : "
+read filetype
+
+printf "You want to copy \"*.%s\" files from \"%s\" to \"%s\" / IS IT CORRECT? (y/n)" "$filetype" "$origin_path" "$dest_path"
+read correct
+
+if [ "${correct}" != "y" ]
+	then
+
+	exit 0
+fi
+
+printf "Copying \"*.%s\" files from \"%s\" to \"%s\" ......" "$filetype" "$origin_path" "$dest_path"
+echo;
+
+
+sudo cp "$origin_path"/*."$filetype" "$dest_path"
+
+
+echo "Complete."
+
+exit 0
