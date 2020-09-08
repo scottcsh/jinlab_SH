@@ -1,5 +1,11 @@
 #!/bin/sh
 
+echo;
+echo "[ Cryo-EM data handling programs ]"
+echo "           Jin Lab, GIST"
+echo;
+echo "Last update: 2020/09/08"
+echo;
 echo "Select program"
 echo;
 echo "1. Rename / rename and numerically order filenames: *.mrc -> ####_Nametag.mrcs"
@@ -23,7 +29,6 @@ echo;
 echo "-----------------------------------------------------"
 echo "|                    Rename mrcs                    |"
 echo "-----------------------------------------------------"
-echo "Last updated: 2020/04/07"
 echo "* means any filename, ##### means ordered filenames -> expected output is 00001.mrc, 00002.mrc, ......"
 echo "Nametag input sample(KARA) -> expected output(00001_KARA.mrc)"
 echo;
@@ -133,14 +138,13 @@ echo;
 echo "-----------------------------------------------------"
 echo "|               Insert OpticsGroupName              |"
 echo "-----------------------------------------------------"
-echo "Last updated: 2020/09/04"
 echo;
 
-echo "*.star file location: "
+echo "*.star file location (/dir1/dir2/input.star): "
 read starloc
 echo;
 
-echo "Insert OpticsGroupName from line: "
+echo "Insert OpticsGroupName from line (usually line 46): "
 read linestart
 echo;
 
@@ -148,11 +152,14 @@ echo "Value for the OpticsGroupName is: "
 read opticsgroup
 echo;
 
+echo "Output *.star file destination (/dir1/dir2/ouput.star): "
+read outloc
+echo;
+
 echo;
 echo "*.star file locatation: $starloc"
 echo "Insert OpticsGroupName of $opticsgroup from line $linestart"
-echo;
-echo "IS IT CORRECT? (y/n)"
+echo "Save as $outloc > IS IT CORRECT? (y/n)"
 read correct
 
 	if [ $correct=="y" ]
@@ -160,9 +167,9 @@ read correct
 
 	echo;
 
-	(vim -c "$linestart,$ s/^/$opticsgroup " -c wq $starloc)
+	(vim -c "$linestart,$ s/$/ $opticsgroup" -c "w! $outloc" -c q! $starloc)
 	
-	echo "Don't forget to add \"_rlnOpticsGroupName #1\" before \"_rlnImageName\" in your *.star file!"
+	echo "Don't forget to add \"_rlnOpticsGroupName #22\" after \"_rlnClassNumber #21\" in your *.star file! (usuallu line 46)"
 
 	fi
 
