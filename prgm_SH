@@ -4,7 +4,7 @@ echo;
 echo "[ Cryo-EM data handling programs ]"
 echo "           Jin Lab, GIST"
 echo;
-echo "Last update: 2020/09/09"
+echo "Last update: 2020/09/14"
 echo;
 echo "Select program"
 echo;
@@ -171,7 +171,7 @@ read correct
 
 	(vim -c "$linestart,$ s/$/ $opticsgroup" -c "w! $outloc" -c q! $starloc)
 	
-	echo "Don't forget to add \"_rlnOpticsGroupName #22\" after \"_rlnClassNumber #21\" in your *.star file! (usually line 46)"
+	echo "Don't forget to add \"_rlnOpticsGroup #22\" after \"_rlnClassNumber #21\" in your *.star file! (usually line 46)"
 
 	fi
 
