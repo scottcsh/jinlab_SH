@@ -209,10 +209,13 @@ echo;
 
 echo "estimating FSC..."
 
+<<<<<<< HEAD
 PATH=$PATH:/opt/relion/build/bin/
 PATH=$PATH:/opt/EMAN2/bin/
 PATH=$PATH:/opt/phenix-1.18.2-3874/build/bin/
 
+=======
+>>>>>>> ac47042539603f22842970af16b7c40f055c242e
 (relion_image_handler --i half1_unfil.mrc --o whole_unfil.mrc --add half2_unfil.mrc)
 
 (relion_image_handler --i half1_unfil.mrc --o half1_sharpen.mrc --bfactor -$bfactor --lowpass $res --angpix $angpix)
@@ -231,6 +234,7 @@ PATH=$PATH:/opt/phenix-1.18.2-3874/build/bin/
 (e2pdb2mrc.py whole_shaken2_refine.pdb whole_shaken2_refine.mrc --apix=$angpix --res=$res --box=$boxsize,$boxsize,$boxsize)
 
 printf "Type (complete) after centering *_shaken2_refine.mrc to whole_sharpen.mrc on chimera."
+<<<<<<< HEAD
 echo;
 printf "Required: half1_shaken2_refine_center.mrc, half2_shaken2_refine_center.mrc, whole_shaken2_refine_center.mrc"
 echo;
@@ -250,15 +254,31 @@ do
 	fi
 
 	
+=======
+printf "Required: half1_shaken2_refine_center.mrc, half2_shaken2_refine_center.mrc, whole_shaken2_refine_center.mrc"
+
+com=""
+
+while [ $com != "complete" ]
+do
+	read com
+	echo;
+>>>>>>> ac47042539603f22842970af16b7c40f055c242e
 done
 
 (relion_mask_create --i half1_shaken2_refine_center.mrc --o half1_shaken2_refine_center_mask.mrc --ini_threshold 1 --extend_inimask 4 --width_soft_edge 8)
 (relion_mask_create --i half2_shaken2_refine_center.mrc --o half2_shaken2_refine_center_mask.mrc --ini_threshold 1 --extend_inimask 4 --width_soft_edge 8)
 (relion_mask_create --i whole_shaken2_refine_center.mrc --o whole_shaken2_refine_center_mask.mrc --ini_threshold 1 --extend_inimask 4 --width_soft_edge 8)
 
+<<<<<<< HEAD
 (relion_image_handler --i half1_unfil.mrc --o original_half1_mask.mrc --multiply half1_shaken2_refine_center_mask.mrc)
 (relion_image_handler --i half2_unfil.mrc --o original_half2_mask.mrc --multiply half2_shaken2_refine_center_mask.mrc)
 (relion_image_handler --i whole_unfil.mrc --o original_whole_mask.mrc --multiply whole_shaken2_refine_center_mask.mrc)
+=======
+(relion_image_handler --i half1_unfil.mrc --o original_half1_mask.mrc --multiply half1_shaken2_refine_Center_mask.mrc)
+(relion_image_handler --i half2_unfil.mrc --o original_half2_mask.mrc --multiply half2_shaken2_refine_Center_mask.mrc)
+(relion_image_handler --i whole_unfil.mrc --o original_whole_mask.mrc --multiply whole_shaken2_refine_Center_mask.mrc)
+>>>>>>> ac47042539603f22842970af16b7c40f055c242e
 
 (relion_image_handler --i original_half1_mask.mrc --o half1_fsc --fsc half1_shaken2_refine_center.mrc > half1_fsc.txt)
 (relion_image_handler --i original_half2_mask.mrc --o half2_fsc --fsc half2_shaken2_refine_center.mrc > half2_fsc.txt)
