@@ -237,6 +237,7 @@ echo;
 
 com=""
 
+
 while [ $com!="complete" ]
 do
 	read com
