@@ -4,7 +4,7 @@ echo;
 echo "[ Cryo-EM data handling programs ]"
 echo "           Jin Lab, GIST"
 echo;
-echo "Last update: 2020/09/14"
+echo "Last update: 2022/03/07"
 echo;
 echo "Select program"
 echo;
@@ -12,6 +12,7 @@ echo "1. Rename / rename and numerically order filenames: *.mrc -> ####_Nametag.
 echo;
 echo "2. OpticsGroupName / add OpticsGroupName in *.star files"
 echo;
+echo "3. FSC estimation"
 
 printf "Select : "
 read prgm
@@ -130,7 +131,7 @@ esac
 #///////////////////////////////// End of Rename ///////////////////////////////////////////////
 
 
-#//////////////////////////////// OpticsGroupName //////////////////////////////////////////////////
+#////////////////////////////////OpticsGroupName //////////////////////////////////////////////////
 
 	"2")
 
@@ -178,6 +179,77 @@ read correct
 
 ;;
 
+
+#////////////////////////////////FSC//////////////////////////////////////////////////
+	"3")
+
+echo;
+echo "-----------------------------------------------------"
+echo "|                   FSC estimation                  |"
+echo "-----------------------------------------------------"
+echo;
+
+echo "Requirements: half1_unfil.mrc, half2_unfil.mrc, model_shaken2.pdb"
+
+printf "B factor (witout -): "
+read bfactor
+echo;
+
+printf "Resolution: "
+read res
+echo;
+
+printf "Pixel size: "
+read angpix
+echo;
+
+printf "Box size: "
+read boxsize
+echo;
+
+echo "estimating FSC..."
+
+(relion_image_handler --i half1_unfil.mrc --o whole_unfil.mrc --add half2_unfil.mrc)
+
+(relion_image_handler --i half1_unfil.mrc --o half1_sharpen.mrc --bfactor -$bfactor --lowpass $res --angpix $angpix)
+(relion_image_handler --i half2_unfil.mrc --o half2_sharpen.mrc --bfactor -$bfactor --lowpass $res --angpix $angpix)
+(relion_image_handler --i whole_unfil.mrc --o whole_sharpen.mrc --bfactor -$bfactor --lowpass $res --angpix $angpix)
+
+(phenix.real_space_refine ./model_shaken2.pdb ./half1_sharpen.mrc ./na.pdb_ss.eff resolution=$res target_bonds_rmsd=0.005 target_angles_rmsd=0.5 secondary_structure.enabled=True ncs_constraints=False |tee half1_refine.log)
+(mv model_shaken2_real_space_refined.pdb half1_shaken2_refine.pdb)
+(phenix.real_space_refine ./model_shaken2.pdb ./half2_sharpen.mrc ./na.pdb_ss.eff resolution=$res target_bonds_rmsd=0.005 target_angles_rmsd=0.5 secondary_structure.enabled=True ncs_constraints=False |tee half2_refine.log)
+(mv model_shaken2_real_space_refined.pdb half2_shaken2_refine.pdb)
+(phenix.real_space_refine ./model_shaken2.pdb ./whole_sharpen.mrc ./na.pdb_ss.eff resolution=$res target_bonds_rmsd=0.005 target_angles_rmsd=0.5 secondary_structure.enabled=True ncs_constraints=False |tee whole_refine.log)
+(mv model_shaken2_real_space_refined.pdb whole_shaken2_refine.pdb)
+
+(e2pdb2mrc.py half1_shaken2_refine.pdb half1_shaken2_refine.mrc --apix=$angpix --res=$res --box=$boxsize,$boxsize,$boxsize)
+(e2pdb2mrc.py half2_shaken2_refine.pdb half2_shaken2_refine.mrc --apix=$angpix --res=$res --box=$boxsize,$boxsize,$boxsize)
+(e2pdb2mrc.py whole_shaken2_refine.pdb whole_shaken2_refine.mrc --apix=$angpix --res=$res --box=$boxsize,$boxsize,$boxsize)
+
+printf "Type (complete) after centering *_shaken2_refine.mrc to whole_sharpen.mrc on chimera."
+printf "Required: half1_shaken2_refine_center.mrc, half2_shaken2_refine_center.mrc, whole_shaken2_refine_center.mrc"
+
+com=""
+
+while [ $com != "complete" ]
+do
+	read com
+	echo;
+done
+
+(relion_mask_create --i half1_shaken2_refine_center.mrc --o half1_shaken2_refine_center_mask.mrc --ini_threshold 1 --extend_inimask 4 --width_soft_edge 8)
+(relion_mask_create --i half2_shaken2_refine_center.mrc --o half2_shaken2_refine_center_mask.mrc --ini_threshold 1 --extend_inimask 4 --width_soft_edge 8)
+(relion_mask_create --i whole_shaken2_refine_center.mrc --o whole_shaken2_refine_center_mask.mrc --ini_threshold 1 --extend_inimask 4 --width_soft_edge 8)
+
+(relion_image_handler --i half1_unfil.mrc --o original_half1_mask.mrc --multiply half1_shaken2_refine_Center_mask.mrc)
+(relion_image_handler --i half2_unfil.mrc --o original_half2_mask.mrc --multiply half2_shaken2_refine_Center_mask.mrc)
+(relion_image_handler --i whole_unfil.mrc --o original_whole_mask.mrc --multiply whole_shaken2_refine_Center_mask.mrc)
+
+(relion_image_handler --i original_half1_mask.mrc --o half1_fsc --fsc half1_shaken2_refine_center.mrc > half1_fsc.txt)
+(relion_image_handler --i original_half2_mask.mrc --o half2_fsc --fsc half2_shaken2_refine_center.mrc > half2_fsc.txt)
+(relion_image_handler --i original_whole_mask.mrc --o whole_fsc --fsc whole_shaken2_refine_center.mrc > whole_fsc.txt)
+
+;;
 	*) exit 0
 
 esac
